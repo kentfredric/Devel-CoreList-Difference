@@ -66,6 +66,17 @@
       }
    },
    "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/kentfredric/Devel-CoreList-Difference/issues"
+      },
+      "homepage" : "https://github.com/kentfredric/Devel-CoreList-Difference",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/kentfredric/Devel-CoreList-Difference.git",
+         "web" : "https://github.com/kentfredric/Devel-CoreList-Difference"
+      }
+   },
    "version" : "0.001000",
    "x_BuiltWith" : {
       "modules" : {

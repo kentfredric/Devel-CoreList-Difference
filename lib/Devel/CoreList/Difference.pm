@@ -99,11 +99,11 @@ sub diff_map {
   my $all = $self->whole_map;
   for my $item ( @{$all} ) {
     if ( $item->{corelist}->{exists} and not keys %{ $item->{installed} } ) {
-      printf "\e[31m[corelist.exists system.!exists]\e[0m %s\n", $item->{module};
+      printf STDERR "\e[31m[corelist.exists system.!exists]\e[0m %s\n", $item->{module};
       next;
     }
     if ( not $item->{corelist}->{exists} and keys %{ $item->{installed} } ) {
-      printf "\e[32m[corelist.!exists system.exists]\e[0m %s\n", $item->{module};
+      printf STDERR "\e[32m[corelist.!exists system.exists]\e[0m %s\n", $item->{module};
       next;
     }
     next unless $item->{corelist}->{exists};
@@ -114,7 +114,7 @@ sub diff_map {
       next if defined $iv and defined $version and $version == $iv;
       $version = 'undef' unless defined $version;
       $iv      = 'undef' unless defined $iv;
-      printf "\e[33m[!=corelist version]\e[0m %s (\e[31mcore=%s\e[0m vs \e[32msystem=%s\e[0m)\n", $file, $version, $iv;
+      printf STDERR "\e[33m[!=corelist version]\e[0m %s (\e[31mcore=%s\e[0m vs \e[32msystem=%s\e[0m)\n", $file, $version, $iv;
       next;
     }
   }

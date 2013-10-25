@@ -9,6 +9,8 @@ META.yml
 README
 dist.ini
 lib/Devel/CoreList/Difference.pm
+lib/Devel/CoreList/Difference/InstallFile.pm
+lib/Devel/CoreList/Difference/Module.pm
 maint-travis-ci/README.mkdn
 maint-travis-ci/before_script.pl
 maint-travis-ci/install_deps.pl

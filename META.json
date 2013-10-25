@@ -54,14 +54,24 @@
       "test" : {
          "requires" : {
             "Capture::Tiny" : "0",
+            "Data::Dump" : "0",
             "Test::More" : "0.99",
-            "blib" : "0"
+            "blib" : "0",
+            "version" : "0"
          }
       }
    },
    "provides" : {
       "Devel::CoreList::Difference" : {
          "file" : "lib/Devel/CoreList/Difference.pm",
+         "version" : "0.001000"
+      },
+      "Devel::CoreList::Difference::InstallFile" : {
+         "file" : "lib/Devel/CoreList/Difference/InstallFile.pm",
+         "version" : "0.001000"
+      },
+      "Devel::CoreList::Difference::Module" : {
+         "file" : "lib/Devel/CoreList/Difference/Module.pm",
          "version" : "0.001000"
       }
    },
@@ -82,6 +92,7 @@
       "modules" : {
          "Capture::Tiny" : "0.23",
          "Class::Tiny" : "0.011",
+         "Data::Dump" : "1.22",
          "Dist::Zilla::PluginBundle::Author::KENTNL" : "2.000000",
          "Dist::Zilla::PluginBundle::Author::KENTNL::Lite" : "1.7.2",
          "Module::Build" : "0.4007",

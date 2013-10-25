@@ -11,6 +11,8 @@ use Capture::Tiny qw{ capture };
 
 my @module_files = qw(
 Devel/CoreList/Difference.pm
+Devel/CoreList/Difference/InstallFile.pm
+Devel/CoreList/Difference/Module.pm
 );
 
 my @scripts = qw(

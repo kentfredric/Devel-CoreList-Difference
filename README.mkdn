@@ -1,0 +1,23 @@
+# NAME
+
+Devel::CoreList::Difference - Report how the \*current\* Perl differs from corelist
+
+# VERSION
+
+version 0.001000
+
+# SYNOPSIS
+
+This module intends to give feedback on how Config{\*} paths contain
+modules at versions other than the ones that shipped with your factory perl.
+
+# AUTHOR
+
+Kent Fredric <kentfredric@gmail.com>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2013 by Kent Fredric <kentfredric@gmail.com>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.

@@ -32,92 +32,24 @@ sub _cfg_to_path {
   return \@out;
 }
 
-use Class::Tiny {
-  perl_version   => sub { $] },
-  site_paths     => sub { _cfg_to_path(qr/site(arch|lib)exp$/) },
-  all_paths      => sub { _cfg_to_path(qr/(arch|lib)exp$/) },
-  metadata_cache => sub {
-    my ($self) = @_;
-    return $Module::CoreList::version{ $self->perl_version };
-  },
-  all_modules_ever_core => sub {
-    my ($self) = @_;
-    my %cache;
-    for my $version ( keys %Module::CoreList::version ) {
-      for my $module ( keys %{ $Module::CoreList::version{$version} } ) {
-        $cache{$module} = 1;
-      }
-    }
-    return [ sort keys %cache ];
-  },
-};
+use Class::Tiny { perl_version => sub { $] }, };
 
-sub find_module {
-  my ( $self, $module_name ) = @_;
-  my $name = module_notional_filename($module_name);
-  return grep { -e $_ and -f $_ } map { $_->child($name) } @{ $self->all_paths };
-}
-
-sub module_vmap {
-  my ( $self, $module_name ) = @_;
-  my (@files) = $self->find_module($module_name);
-  my $mesh = { module => $module_name };
-  $mesh->{corelist}->{exists}  = $self->has_pristine_version($module_name);
-  $mesh->{corelist}->{version} = $self->pristine_version($module_name) if $mesh->{corelist}->{exists};
-  $mesh->{installed}           = {};
-
-  for my $file (@files) {
-    my $info = Module::Metadata->new_from_file("$file");
-    my $v    = $info->version;
-    $mesh->{installed}->{"$file"} = $v;
-  }
-  return $mesh;
-}
-
-sub has_pristine_version {
-  my ( $self, $module ) = @_;
-  return exists $self->metadata_cache->{$module};
-}
-
-sub pristine_version {
-  my ( $self, $module ) = @_;
-  return $self->metadata_cache->{$module};
-}
-
-sub whole_map {
-  my ($self) = @_;
-  my @out;
-
-  for my $module ( @{ $self->all_modules_ever_core } ) {
-    push @out, $self->module_vmap($module);
-  }
-  return \@out;
-}
-
-sub diff_map {
-  my ($self) = @_;
-  my $all = $self->whole_map;
-  for my $item ( @{$all} ) {
-    if ( $item->{corelist}->{exists} and not keys %{ $item->{installed} } ) {
-      printf STDERR "\e[31m[corelist.exists system.!exists]\e[0m %s\n", $item->{module};
-      next;
-    }
-    if ( not $item->{corelist}->{exists} and keys %{ $item->{installed} } ) {
-      printf STDERR "\e[32m[corelist.!exists system.exists]\e[0m %s\n", $item->{module};
-      next;
-    }
-    next unless $item->{corelist}->{exists};
-    for my $file ( keys %{ $item->{installed} } ) {
-      my $version = $item->{corelist}->{version};
-      my $iv      = $item->{installed}->{$file};
-      next if not defined $iv and not defined $version;
-      next if defined $iv and defined $version and $version == $iv;
-      $version = 'undef' unless defined $version;
-      $iv      = 'undef' unless defined $iv;
-      printf STDERR "\e[33m[!=corelist version]\e[0m %s (\e[31mcore=%s\e[0m vs \e[32msystem=%s\e[0m)\n", $file, $version, $iv;
-      next;
+sub dmap_2 {
+  my ( $self, $hook ) = @_;
+  my @modules;
+  my %seen;
+  for my $version ( sort keys %Module::CoreList::version ) {
+    for my $module ( sort keys %{ $Module::CoreList::version{$version} } ) {
+      next if $seen{$module};
+      $seen{$module} = 1;
+      require Devel::CoreList::Difference::Module;
+      my $module = Devel::CoreList::Difference::Module->new( module_name => $module, perl_version => $self->perl_version );
+      push @modules, $module;
+      $hook->($module) if $hook;
     }
   }
+  return @modules;
+
 }
 
 1;

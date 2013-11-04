@@ -34,21 +34,23 @@ my %module_build_args = (
   },
   "script_files" => [],
   "test_requires" => {
-    "Capture::Tiny" => 0,
     "Data::Dump" => 0,
+    "File::Spec" => 0,
+    "IO::Handle" => 0,
+    "IPC::Open3" => 0,
     "Test::More" => "0.99",
-    "blib" => 0,
     "version" => 0
   }
 );
 
 
 my %fallback_build_requires = (
-  "Capture::Tiny" => 0,
   "Data::Dump" => 0,
+  "File::Spec" => 0,
+  "IO::Handle" => 0,
+  "IPC::Open3" => 0,
   "Module::Build" => "0.4007",
   "Test::More" => "0.99",
-  "blib" => 0,
   "version" => 0
 );
 

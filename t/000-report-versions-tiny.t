@@ -48,16 +48,17 @@ sub pmver {
     return sprintf('%-45s => %-10s%-15s%s', $module, $pmver, $wanted, "\n");
 }
 
-eval { $v .= pmver('Capture::Tiny','any version') };
 eval { $v .= pmver('Class::Tiny','any version') };
 eval { $v .= pmver('Data::Dump','any version') };
+eval { $v .= pmver('File::Spec','any version') };
+eval { $v .= pmver('IO::Handle','any version') };
+eval { $v .= pmver('IPC::Open3','any version') };
 eval { $v .= pmver('Module::Build','0.4007') };
 eval { $v .= pmver('Module::CoreList','any version') };
 eval { $v .= pmver('Module::Metadata','any version') };
 eval { $v .= pmver('Module::Runtime','any version') };
 eval { $v .= pmver('Path::Tiny','any version') };
 eval { $v .= pmver('Test::More','0.99') };
-eval { $v .= pmver('blib','any version') };
 eval { $v .= pmver('strict','any version') };
 eval { $v .= pmver('version','any version') };
 eval { $v .= pmver('warnings','any version') };

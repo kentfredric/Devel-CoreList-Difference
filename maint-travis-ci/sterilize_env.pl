@@ -1,50 +1,10 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use utf8;
 
-sub diag { print STDERR @_; print STDERR "\n" }
-sub env_exists { return exists $ENV{ $_[0] } }
-sub env_true   { return ( env_exists( $_[0] ) and $ENV{ $_[0] } ) }
-sub env_is     { return ( env_exists( $_[0] ) and $ENV{ $_[0] } eq $_[1] ) }
-
-sub safe_exec_nonfatal {
-  my ( $command, @params ) = @_;
-  diag("running $command @params");
-  my $exit = system( $command, @params );
-  if ( $exit != 0 ) {
-    my $low  = $exit & 0b11111111;
-    my $high = $exit >> 8;
-    warn "$command failed: $? $! and exit = $high , flags = $low";
-    if ( $high != 0 ) {
-      return $high;
-    }
-    else {
-      return 1;
-    }
-
-  }
-  return 0;
-}
-
-sub safe_exec {
-  my ( $command, @params ) = @_;
-  my $exit_code = safe_exec_nonfatal( $command, @params );
-  if ( $exit_code != 0 ) {
-    exit $exit_code;
-  }
-  return 1;
-}
-
-sub cpanm {
-  my (@params) = @_;
-  my $exit_code = safe_exec_nonfatal( 'cpanm', @params );
-  if ( $exit_code != 0 ) {
-    safe_exec( 'tail', '-n', '200', '/home/travis/.cpanm/build.log' );
-    exit $exit_code;
-  }
-  return 1;
-}
+use FindBin;
+use lib "$FindBin::Bin/lib";
+use tools;
 
 sub no_sterile_warning {
   if ( env_is( 'TRAVIS_PERL_VERSION', '5.8' ) or env_is( 'TRAVIS_PERL_VERSION', '5.10' ) ) {
@@ -64,7 +24,10 @@ sub no_sterile_warning {
     diag("\e[35m PROCEEDING\e[0m");
   }
 }
-
+if ( not env_exists('STERILIZE_ENV') ) {
+  diag("\e[31STERILIZE_ENV is not set, skipping, because this is probably Travis's Default ( and unwanted ) target");
+  exit 0;
+}
 if ( not env_true('STERILIZE_ENV') ) {
   diag('STERILIZE_ENV unset or false, not sterilizing');
   exit 0;
@@ -79,8 +42,23 @@ my $extra_sterile = {
     install => ['Module::Build~<0.340202'],
   },
   '5.12' => {
-    remove  => ['autobox.pm'],
-    install => ['Module::Build~<0.3604'],
+    remove => [
+      ( 'autobox.pm', 'TAP/Parser/SourceHandler.pm', 'TAP/Parser/SourceHandler/Executable.pm' ),
+      ( 'TAP/Parser/SourceHandler/File.pm', 'TAP/Parser/SourceHandler/Handle.pm', 'TAP/Parser/SourceHandler/Perl.pm' ),
+      ( 'TAP/Parser/SourceHandler/RawTAP.pm', 'CPAN/Meta/YAML.pm',    'JSON/PP.pm',           'JSON/PP/Boolean.pm' ),
+      ( 'Module/Metadata.pm',                 'Perl/OSType.pm',       'CPAN/Meta.pm',         'CPAN/Meta/Converter.pm' ),
+      ( 'CPAN/Meta/Feature.pm',               'CPAN/Meta/History.pm', 'CPAN/Meta/Prereqs.pm', 'CPAN/Meta/Spec.pm' ),
+      ( 'CPAN/Meta/Validator.pm',             'Version/Requirements.pm' ),
+      ('ExtUtils/Miniperl.pm'),
+    ],
+    install => [
+      'Module::Build~<=0.3603',    'ExtUtils::MakeMaker~<=6.56',   'Test::Harness~<=3.17',     'ExtUtils::Liblist~<=6.56',
+      'ExtUtils::Manifest~<=1.57', 'ExtUtils::Mkbootstrap~<=6.56', 'ExtUtils::MM_OS2~<=6.56',  'ExtUtils::MM_Unix~<=6.56',
+      'ExtUtils::MM_VMS~<=6.56',   'ExtUtils::Mksymlists~<=6.56',  'ExtUtils::testlib~<=6.56', 'ExtUtils::MM_Win32~<=6.56',
+      'File::Spec~<=3.31_01',      'File::Spec::Mac~<=3.30',       'File::Spec::OS2~<=3.30',   'File::Spec::Unix~<=3.30',
+      'File::Spec::VMS~<=3.30',    'File::Spec::Win32~<=3.30',     'Data::Dumper~<=2.125',     'File::Spec::Functions~<=3.30',
+      'Carp::Heavy~<=1.17',
+    ],
   },
 };
 
@@ -91,22 +69,23 @@ if ( not env_true('TRAVIS') ) {
 
 use Config;
 
-my @all_libs  = map { $Config{$_} } grep { $_ =~ /(lib|arch)exp$/ } keys %Config;
-my @site_libs = map { $Config{$_} } grep { $_ =~ /site(lib|arch)exp$/ } keys %Config;
+my @all_libs  = grep { defined and length and -e $_ } map { $Config{$_} } grep { $_ =~ /(lib|arch)exp$/ } keys %Config;
+my @site_libs = grep { defined and length and -e $_ } map { $Config{$_} } grep { $_ =~ /site(lib|arch)exp$/ } keys %Config;
 
 for my $perl_ver ( keys %{$extra_sterile} ) {
   if ( env_is( 'TRAVIS_PERL_VERSION', $perl_ver ) ) {
     diag("Running custom sterilization fixups");
     my $fixups = $extra_sterile->{$perl_ver};
-    for my $target ( @{ $fixups->{install} } ) {
-      cpanm( '--quiet', '--notest', '--no-man-pages', $target );
+    if ( @{ $fixups->{install} } ) {
+      cpanm( '--quiet', '--notest', '--no-man-pages', @{ $fixups->{install} } );
     }
     if ( $fixups->{remove} ) {
       diag("Removing Bad things from all Config paths");
       for my $libdir (@all_libs) {
         for my $removal ( @{ $fixups->{remove} } ) {
           my $path = $libdir . '/' . $removal;
-          if ( -e -f $path ) {
+          diag("\e[32m ? $path \e[0m");
+          if ( -e $path and -f $path ) {
             unlink $path;
             diag("Removed $path");
           }

@@ -16,6 +16,7 @@ maint-travis-ci/before_script.pl
 maint-travis-ci/corelist-data/5.008009.zsv
 maint-travis-ci/corelist-data/5.010001.zsv
 maint-travis-ci/corelist-data/5.012005.zsv
+maint-travis-ci/corelist-data/5.012005_skip.zsv
 maint-travis-ci/corelist-data/5.014004.zsv
 maint-travis-ci/corelist-data/5.016003.zsv
 maint-travis-ci/corelist-data/5.017007.zsv
